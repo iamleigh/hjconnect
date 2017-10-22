@@ -100,4 +100,43 @@ class Hjconnect_Admin {
 
 	}
 
+	/**
+	 * Register the administration menu for this plugin into WordPress Dashboard menu.
+	 * 
+	 * @since 1.0.0
+	 */
+	public function add_plugin_admin_menu() {
+		
+		add_menu_page( 'Hotjar Connection', 'Hotjar', 'manage_options', $this->plugin_name, array( $this, 'display_plugin_setup_page' ), 'dashicons-update' );
+
+	}
+
+	/**
+	 * Render the settings page for the plugin.
+	 * 
+	 * @since 1.0.0
+	 */
+	public function display_plugin_setup_page() {
+
+		include_once( 'partials/hjconnect-admin-display.php' );
+
+	}
+
+	public function validate( $input ) {
+
+		$valid = array();
+
+		$valid['hotjar_on'] = ( isset( $input['hotjar_on'] ) && ! empty( $input['hotjar_on'] ) ) ? 1 : 0;
+		$valid['hotjar_id'] = esc_html( $input['hotjar_id'] );
+
+		return $valid;
+
+	}
+
+	public function options_update() {
+
+		register_setting( $this->plugin_name, $this->plugin_name, array( $this, 'validate' ) );
+
+	}
+
 }

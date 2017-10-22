@@ -52,6 +52,8 @@ class Hjconnect_Public {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 
+		$this->hjconnect_options = get_option( $this->plugin_name );
+
 	}
 
 	/**
@@ -99,5 +101,28 @@ class Hjconnect_Public {
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/hjconnect-public.js', array( 'jquery' ), $this->version, false );
 
 	}
+
+	public function hotjar_connect() {
+		
+		if ( ! empty( $this->hjconnect_options['hotjar_on'] ) && ! empty( $this->hjconnect_options['hotjar_id'] ) ) {
+
+			if ( ! empty( $this->hjconnect_options['hotjar_id'] ) ) {
+				$hjid = $this->hjconnect_options['hotjar_id'];
+			}
+			
+			echo "<script>
+				(function(h,o,t,j,a,r){
+					h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+					h._hjSettings={hjid:" . $hjid . ",hjsv:6};
+					a=o.getElementsByTagName('head')[0];
+					r=o.createElement('script');r.async=1;
+					r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+					a.appendChild(r);
+				})(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+			</script>";
+			
+		}
+		
+    }
 
 }
