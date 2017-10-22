@@ -60,11 +60,17 @@ class Hjconnect_Public {
 		
 		if ( ! empty( $this->hjconnect_options['hotjar_on'] ) && ! empty( $this->hjconnect_options['hotjar_id'] ) ) {
 
+			$siteurl = get_home_url();
+			$find = array( 'http://', 'https://' );
+			$replace = '';
+			$hjsite = str_replace( $find, $replace, $siteurl );
+
 			if ( ! empty( $this->hjconnect_options['hotjar_id'] ) ) {
 				$hjid = $this->hjconnect_options['hotjar_id'];
 			}
 			
-			echo "<script>
+			echo "<!-- Hotjar Tracking Code for " . $hjsite . " -->
+			<script>
 				(function(h,o,t,j,a,r){
 					h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
 					h._hjSettings={hjid:" . $hjid . ",hjsv:6};
