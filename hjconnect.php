@@ -15,7 +15,7 @@
  * @wordpress-plugin
  * Plugin Name:       Hotjar Connection
  * Plugin URI:        iamleigh.com
- * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
+ * Description:       Connect your WordPress site with Hotjar fast and easy in matter of seconds.
  * Version:           1.0.0
  * Author:            Leighton Sapir
  * Author URI:        iamleigh.com
