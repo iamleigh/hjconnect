@@ -1,60 +1,94 @@
-'use strict';
+// Load packages
+var fs           = require( 'fs' ),
+	gulp         = require( 'gulp' ),
+	watch        = require( 'gulp-watch' ),
+	sass         = require( 'gulp-sass' ),
+	sourcemaps   = require( 'gulp-sourcemaps' ),
+	autoprefixer = require( 'gulp-autoprefixer' ),
+	rename       = require( 'gulp-rename' ),
+	notify       = require( 'gulp-notify' ),
+	wpPot        = require( 'gulp-wp-pot' )
+	;
 
-// Project paths
+// Get package.json file
+var pckg = JSON.parse( fs.readFileSync( './package.json' ) );
+
+// List of browsers
+var browserlist = [
+	'last 2 version',
+	'> 1%'
+];
+
+// Paths
 var paths = {
-    src: 'admin/sass/',
-    dist: 'admin/css/'
+    src:      'admin/sass/',
+	dist:     'admin/css/',
+	distLang: 'languages/'
 };
 
-// Load packages
-var gulp = require('gulp'),
-    watch = require('gulp-watch'),
-    sass = require('gulp-sass'),
-    sourcemaps = require('gulp-sourcemaps'),
-    autoprefixer = require('gulp-autoprefixer'),
-    notify = require('gulp-notify'),
-    concat = require('gulp-concat'),
-    uglify = require('gulp-uglify'),
-    wpPot = require('gulp-wp-pot')
-;
-
-// TASK admin-styles
-gulp.task( 'admin-styles', function() {
-    gulp.src( paths.src + '**/**/*.scss' )
-        .pipe( sourcemaps.init() )
-        .pipe( sass( {outputStyle: 'compressed'} ) ).on( 'error', function(err) {notify().write(err);} )
-        .pipe( autoprefixer( 'last 2 version', '> 1%', 'safari 5', 'ie 8', 'ie 9', 'opera 12.1', 'ios 6', 'android 4' ) )
-        .pipe( sourcemaps.write( "maps" ) )
-        .pipe( gulp.dest( paths.dist ) )
-		.pipe( notify( {message: 'Plugin styles are ready.', onLast: true} ) );
-} );
-
-// TASK makepot
-var potSources = [
+// Localized strings
+var strings = [
     'hjconnect.php',
     'admin/*.php',
     'admin/**/*.php',
     'includes/*.php'
 ];
 
-gulp.task( 'makepot', function () {
-    return gulp.src(potSources)
-        .pipe( wpPot( {
-            domain          : 'hjconnect',
-            destFile        : 'languages/iamleigh.pot',
-            package         : 'Hotjar Connect',
-            bugReport       : 'https://github.com/iamleigh/hjconnect/issues?q=is%3Aopen',
-            lastTranslator  : 'Leighton Sapir <leighton@pandamints.com>',
-            team            : 'Leighton Sapir <leighton@pandamints.com>'
-        } ) )
-        .pipe( gulp.dest( 'languages/hjconnect-en_US.po' ) )
-        .pipe( notify( { message: 'Plugin translation is ready.', onLast: true } ) );
+// ==================================================
+// Tasks
+
+// Task: Compress admin styles
+gulp.task( 'admin-styles', function() {
+
+	gulp.src( paths.src + '**/**/*.scss' )
+		.pipe( sourcemaps.init() )
+		.pipe( sass({ outputStyle: 'compressed' }) ).on( 'error', function( err ) {
+			notify().write( err );
+		} )
+		.pipe( autoprefixer( browserlist ) )
+		.pipe( sourcemaps.write( 'maps' ) )
+		.pipe( rename({
+			suffix: '.min'
+		}) )
+		.pipe( gulp.dest( paths.dist ) )
+		.pipe( notify({
+			message: 'Plugin styles are ready',
+			onLast: true
+		}) )
+		;
 } );
 
-// TASK watch-css
-gulp.task( 'watch-css', function() {
-    gulp.watch( paths.src + '**/**/**/**/*.scss', ['styles'] );
+gulp.task( 'watch-admin-styles', function() {
+	gulp.watch( paths.src + '**/**/*.scss', [ 'admin-styles' ] );
 } );
 
-// Register tasks to 'gulp' command
-gulp.task( 'default', ['admin-styles', 'watch-css'] );
+// Task: Create language files
+gulp.task( 'makepot', function() {
+
+	return gulp.src( strings )
+		.pipe( wpPot({
+			domain:         'hjconnect',
+			package:        'Hotjar Connect ' + pckg.version,
+			bugReport:      'https://github.com/iamleigh/hjconnect/issues?q=is%3Aopen',
+			lastTranslator: 'Leighton Sapir <leighton@pandamints.com>',
+            team:           'Leighton Sapir <leighton@pandamints.com>'
+		}) )
+		.pipe( gulp.dest( paths.distLang + 'hustle-en_US.po' ) )
+		.pipe( notify({
+			message: 'Plugin translation file is ready.',
+			onLast: true
+		}) )
+		;
+});
+
+// ==================================================
+// Watch
+
+// Watch all tasks
+gulp.task( 'default', [ 'watch-admin-styles' ] );
+
+// Watch admin tasks
+gulp.task( 'admin', [ 'watch-admin-styles' ] );
+
+// Build styles and scripts
+gulp.task( 'build', [ 'admin-styles', 'makepot' ] );
